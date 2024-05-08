@@ -1,0 +1,84 @@
+-- 1.How many billionaires exist in 2024?
+
+with data as
+(
+select  distinct count(BillionairesRichestBillionaire2023)
+ from jarretto.`billionaires-by-country-2024`
+ ),
+  
+
+-- 2.Count and Avg Net Worth of the billionaires by region(continent)              
+ net_worth as
+(select region,
+	   round(avg(BillionairesTotalNetWorth2023),2) as avg_net_worth_millions,
+       count(BillionairesRichestBillionaire2023) as billionaire_count,
+       round(sum(BillionairesTotalNetWorth2023),2) as total_net_worth
+       from `billionaires-by-country-2024`
+       group by 1
+       order by 2 desc
+       ),
+       
+       
+-- 3. African billionaires as a % of the net worth of the whole world, other countries too.
+percentage as
+(
+select 
+        round(sum(case when region = 'Africa' then BillionairesTotalNetWorth2023 else 0 end)/sum(BillionairesTotalNetWorth2023)*100,2) as pct_total_africa,
+        round(sum(case when region = 'North America' then BillionairesTotalNetWorth2023 else 0 end)/sum(BillionairesTotalNetWorth2023)*100,2) as pct_total_north_america,
+        round(sum(case when region = 'Asia' then BillionairesTotalNetWorth2023  else 0 end)/sum(BillionairesTotalNetWorth2023)*100,2) as pct_total_asia,
+        round(sum(case when region = 'Oceania' then BillionairesTotalNetWorth2023 else 0 end)/sum(BillionairesTotalNetWorth2023)*100,2) as pct_total_oceania,
+        round(sum(case when region = 'Europe' then BillionairesTotalNetWorth2023  else 0 end)/sum(BillionairesTotalNetWorth2023)*100,2) as pct_total_europe,
+        round(sum(case when region = 'South America' then BillionairesTotalNetWorth2023  else 0 end)/sum(BillionairesTotalNetWorth2023)*100,2) as pct_total_south_america,
+        round(sum(BillionairesTotalNetWorth2023),2) as total_net_worth
+        from `billionaires-by-country-2024`
+),
+
+-- 4. Top 5 billionaires regardless of country or region
+top_5 as
+(
+select country,
+	   region,
+       BillionairesRichestBillionaire2023,
+       BillionairesTotalNetWorth2023
+       from `billionaires-by-country-2024`
+       order by 4 desc
+       limit 5
+	),
+       
+       
+-- 5. Is there a relationship between the regions with the highest number of billionaires and;
+          -- Population growth rate
+          -- Population density
+region_relationship as
+(select region,
+	   round(avg(Population_growthRate),4),
+       round(avg(population_density_km),2),
+       round(avg(BillionairesPerMillionPeople2023),2)
+       from `billionaires-by-country-2024`
+       group by 1
+       order by 4 desc
+),
+       
+       
+-- 6. Avg net worth by UN Member status
+un_status as
+(
+select unMember,
+       round(avg(BillionairesTotalNetWorth2023),2) as avg_net_worth,
+       round(sum(BillionairesTotalNetWorth2023),2) as total_net_worth,
+       round(count(BillionairesRichestBillionaire2023),2) as unmember_count
+from jarretto.`billionaires-by-country-2024`
+group by 1
+order by 4 desc
+)
+
+select * from un_status
+
+
+        
+       
+     
+       
+       
+       
+       
